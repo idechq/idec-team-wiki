@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { compose } from "recompose";
 
 import { withFirebase } from "../Firebase";
 import MessageList from "./messageList";
@@ -117,22 +115,4 @@ class Messages extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({
-  authUser: state.sessionState.authUser,
-  messages: Object.keys(state.messageState.messages || {}).map((key) => ({
-    ...state.messageState.messages[key],
-    uid: key,
-  })),
-  limit: state.messageState.limit,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  onSetMessages: (messages) => dispatch({ type: "MESSAGES_SET", messages }),
-  onSetMessagesLimit: (limit) =>
-    dispatch({ type: "MESSAGES_LIMIT_SET", limit }),
-});
-
-export default compose(
-  withFirebase,
-  connect(mapStateToProps, mapDispatchToProps)
-)(Messages);
+export default withFirebase(Messages);

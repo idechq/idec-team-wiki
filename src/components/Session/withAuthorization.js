@@ -1,7 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router-dom";
 import { compose } from "recompose";
-import { connect } from "react-redux";
 
 import * as ROUTES from "../../constants/routes";
 import { withFirebase } from "../Firebase";
@@ -30,15 +29,7 @@ const withAuthorization = (condition) => (Component) => {
     }
   }
 
-  const mapStateToProps = (state) => ({
-    authUser: state.sessionState.authUser,
-  });
-
-  return compose(
-    withRouter,
-    withFirebase,
-    connect(mapStateToProps)
-  )(WithAuthorization);
+  return compose(withRouter, withFirebase)(WithAuthorization);
 };
 
 export default withAuthorization;

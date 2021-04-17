@@ -1,7 +1,5 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { connect } from "react-redux";
-import { compose } from "recompose";
 
 import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
@@ -62,18 +60,4 @@ class UserList extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({
-  users: Object.keys(state.userState.users || {}).map((key) => ({
-    ...state.userState.users[key],
-    uid: key,
-  })),
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  onSetUsers: (users) => dispatch({ type: "USERS_SET", users }),
-});
-
-export default compose(
-  withFirebase,
-  connect(mapStateToProps, mapDispatchToProps)
-)(UserList);
+export default withFirebase(UserList);

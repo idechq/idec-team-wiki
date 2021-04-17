@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { compose } from "recompose";
 
 import { withFirebase } from "../Firebase";
 
@@ -67,15 +65,5 @@ class UserItem extends Component {
     );
   }
 }
-const mapStateToProps = (state, props) => ({
-  users: (state.userState.users || {})[props.match.params.id],
-});
 
-const mapDispatchToProps = (dispatch) => ({
-  onSetUsers: (users, uid) => dispatch({ type: "USER_SET", users, uid }),
-});
-
-export default compose(
-  withFirebase,
-  connect(mapStateToProps, mapDispatchToProps)
-)(UserItem);
+export default withFirebase(UserItem);
