@@ -8,34 +8,38 @@ class UserItem extends Component {
 
     this.state = {
       loading: false,
+      user: null,
+      ...props.location.state,
     };
   }
 
   componentDidMount() {
-    if (!this.props.user) {
-      this.setState({ loading: true });
+    if (this.state.user) {
+      return;
     }
 
-    this.props.firebase
-      .user(this.props.match.params.id)
-      .on("value", (snapshot) => {
-        this.props.onSetUser(snapshot.val(), this.props.match.params.id);
+    this.setState({ loading: true });
 
-        this.setState({ loading: false });
+    this.unsubscribe = this.props.firebase
+      .user(this.props.match.params.id)
+      .onSnapshot((snapshot) => {
+        this.setState({
+          user: snapshot.data(),
+          loading: false,
+        });
       });
   }
 
   componentWillUnmount() {
-    this.props.firebase.user(this.props.match.params.id).off();
+    this.unsubscribe && this.unsubscribe();
   }
 
   onSendPasswordResetEmail = () => {
-    this.props.firebase.doPasswordReset(this.props.user.email);
+    this.props.firebase.doPasswordReset(this.state.user.email);
   };
 
   render() {
-    const { user } = this.props;
-    const { loading } = this.state;
+    const { user, loading } = this.state;
 
     return (
       <div>
@@ -54,10 +58,9 @@ class UserItem extends Component {
               <strong>Username:</strong> {user.username}
             </span>
             <span>
-              <button
-                type="button"
-                onClick={this.onSendPasswordResetEmail}
-              ></button>
+              <button type="button" onClick={this.onSendPasswordResetEmail}>
+                Send Password Reset
+              </button>
             </span>
           </div>
         )}
