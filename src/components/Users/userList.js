@@ -10,36 +10,33 @@ class UserList extends Component {
 
     this.state = {
       loading: false,
-      users: [],
     };
   }
 
   componentDidMount() {
-    this.setState({ loading: true });
-
-    this.unsubscribe = this.props.firebase.users().onSnapshot((snapshot) => {
-      let users = [];
-
-      snapshot.forEach((doc) => users.push({ ...doc.data(), uid: doc.id }));
-
-      this.setState({
-        users,
-        loading: false,
-      });
+    if (!this.props.users.length) {
+      this.setState({ loading: true });
+    }
+    this.props.firebase.users().on("value", (snapshot) => {
+      this.props.onSetUsers(snapshot.val());
     });
+
+    this.setState({ loading: false });
   }
 
   componentWillUnmount() {
-    this.unsubscribe();
+    this.props.firebase.users().off();
   }
 
   render() {
-    const { users, loading } = this.state;
+    const { users } = this.props;
+    const { loading } = this.state;
 
     return (
       <div>
         <h2>Users</h2>
         {loading && <div>Loading ...</div>}
+
         <ul>
           {users.map((user) => (
             <li key={user.uid}>
@@ -53,14 +50,7 @@ class UserList extends Component {
                 <strong>Username:</strong> {user.username}
               </span>
               <span>
-                <Link
-                  to={{
-                    pathname: `${ROUTES.ADMIN}/${user.uid}`,
-                    state: { user },
-                  }}
-                >
-                  Details
-                </Link>
+                <Link to={`${ROUTES.ADMIN}/${user.uid}`}>Details</Link>
               </span>
             </li>
           ))}

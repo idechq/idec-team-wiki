@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 
-import { AuthUserContext } from "../Session";
 import { withFirebase } from "../Firebase";
 import MessageList from "./messageList";
 
@@ -11,41 +10,38 @@ class Messages extends Component {
     this.state = {
       text: "",
       loading: false,
-      messages: [],
-      limit: 5,
     };
   }
 
   componentDidMount() {
+    if (!this.props.messages.length) {
+      this.setState({ loading: true });
+    }
     this.onListenForMessages();
   }
 
-  onListenForMessages = () => {
+  onListenForMessages() {
     this.setState({ loading: true });
 
-    this.unsubscribe = this.props.firebase
+    this.props.firebase
       .messages()
-      .orderBy("createdAt", "desc")
-      .limit(this.state.limit)
-      .onSnapshot((snapshot) => {
-        if (snapshot.size) {
-          let messages = [];
-          snapshot.forEach((doc) =>
-            messages.push({ ...doc.data(), uid: doc.id })
-          );
+      .orderByChild("createdAt")
+      .limitToLast(this.props.limit)
+      .on("value", (snapshot) => {
+        this.props.onSetMessages(snapshot.val());
 
-          this.setState({
-            messages: messages.reverse(),
-            loading: false,
-          });
-        } else {
-          this.setState({ messages: null, loading: false });
-        }
+        this.setState({ loading: false });
       });
-  };
+  }
+
+  componentDidUpdate(props) {
+    if (props.limit !== this.props.limit) {
+      this.onListenForMessages();
+    }
+  }
 
   componentWillUnmount() {
-    this.unsubscribe();
+    this.props.firebase.messages().off();
   }
 
   onChangeText = (event) => {
@@ -53,10 +49,10 @@ class Messages extends Component {
   };
 
   onCreateMessage = (event, authUser) => {
-    this.props.firebase.messages().add({
+    this.props.firebase.messages().push({
       text: this.state.text,
       userId: authUser.uid,
-      createdAt: this.props.firebase.fieldValue.serverTimestamp(),
+      createdAt: this.props.firebase.serverValue.TIMESTAMP,
     });
 
     this.setState({ text: "" });
@@ -64,60 +60,57 @@ class Messages extends Component {
     event.preventDefault();
   };
 
+  onRemoveMessage = (uid) => {
+    this.props.firebase.message(uid).remove();
+  };
+
   onEditMessage = (message, text) => {
     const { uid, ...messageSnapshot } = message;
 
-    this.props.firebase.message(message.uid).update({
+    this.props.firebase.message(message.uid).set({
       ...messageSnapshot,
       text,
-      editedAt: this.props.firebase.fieldValue.serverTimestamp(),
+      editedAt: this.props.firebase.serverValue.TIMESTAMP,
     });
   };
 
-  onRemoveMessage = (uid) => {
-    this.props.firebase.message(uid).delete();
-  };
-
   onNextPage = () => {
-    this.setState(
-      (state) => ({ limit: state.limit + 5 }),
-      this.onListenForMessages
-    );
+    this.props.onSetMessagesLimit(this.props.limit + 5);
   };
 
   render() {
-    const { text, messages, loading } = this.state;
+    const { users, messages } = this.props;
+    const { text, loading } = this.state;
 
     return (
-      <AuthUserContext.Consumer>
-        {(authUser) => (
-          <div>
-            {!loading && messages && (
-              <button type="button" onClick={this.onNextPage}>
-                More
-              </button>
-            )}
-
-            {loading && <div>Loading ...</div>}
-
-            {messages && (
-              <MessageList
-                authUser={authUser}
-                messages={messages}
-                onEditMessage={this.onEditMessage}
-                onRemoveMessage={this.onRemoveMessage}
-              />
-            )}
-
-            {!messages && <div>There are no messages ...</div>}
-
-            <form onSubmit={(event) => this.onCreateMessage(event, authUser)}>
-              <input type="text" value={text} onChange={this.onChangeText} />
-              <button type="submit">Send</button>
-            </form>
-          </div>
+      <div>
+        {!loading && messages && (
+          <button type="button" onClick={this.onNextPage}>
+            More
+          </button>
         )}
-      </AuthUserContext.Consumer>
+        {loading && <div>Loading ...</div>}
+
+        {messages && (
+          <MessageList
+            messages={messages.map((message) => ({
+              ...message,
+              user: users ? users[message.userId] : { userId: message.userId },
+            }))}
+            onEditMessage={this.onEditMessage}
+            onRemoveMessage={this.onRemoveMessage}
+          />
+        )}
+
+        {!messages && <div>There are no messages ...</div>}
+
+        <form
+          onSubmit={(event) => this.onCreateMessage(event, this.props.authUser)}
+        >
+          <input type="text" value={text} onChange={this.onChangeText} />
+          <button type="submit">Send</button>
+        </form>
+      </div>
     );
   }
 }
