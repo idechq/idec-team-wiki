@@ -19,10 +19,11 @@ const INITIAL_STATE = {
 class PasswordForgetFormBase extends Component {
   constructor(props) {
     super(props);
+
     this.state = { ...INITIAL_STATE };
   }
 
-  onsubmit = (event) => {
+  onSubmit = (event) => {
     const { email } = this.state;
 
     this.props.firebase
@@ -33,6 +34,7 @@ class PasswordForgetFormBase extends Component {
       .catch((error) => {
         this.setState({ error });
       });
+
     event.preventDefault();
   };
 

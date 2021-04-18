@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { withFirebase } from "../Firebase";
+import { withFirebase } from '../Firebase';
 
 class UserItem extends Component {
   constructor(props) {
@@ -8,34 +8,38 @@ class UserItem extends Component {
 
     this.state = {
       loading: false,
+      user: null,
+      ...props.location.state,
     };
   }
 
   componentDidMount() {
-    if (!this.props.user) {
-      this.setState({ loading: true });
+    if (this.state.user) {
+      return;
     }
 
-    this.props.firebase
-      .user(this.props.match.params.id)
-      .on("value", (snapshot) => {
-        this.props.onSetUser(snapshot.val(), this.props.match.params.id);
+    this.setState({ loading: true });
 
-        this.setState({ loading: false });
+    this.unsubscribe = this.props.firebase
+      .user(this.props.match.params.id)
+      .onSnapshot(snapshot => {
+        this.setState({
+          user: snapshot.data(),
+          loading: false,
+        });
       });
   }
 
   componentWillUnmount() {
-    this.props.firebase.user(this.props.match.params.id).off();
+    this.unsubscribe && this.unsubscribe();
   }
 
   onSendPasswordResetEmail = () => {
-    this.props.firebase.doPasswordReset(this.props.user.email);
+    this.props.firebase.doPasswordReset(this.state.user.email);
   };
 
   render() {
-    const { user } = this.props;
-    const { loading } = this.state;
+    const { user, loading } = this.state;
 
     return (
       <div>
@@ -57,7 +61,9 @@ class UserItem extends Component {
               <button
                 type="button"
                 onClick={this.onSendPasswordResetEmail}
-              ></button>
+              >
+                Send Password Reset
+              </button>
             </span>
           </div>
         )}

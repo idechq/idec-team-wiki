@@ -1,9 +1,7 @@
 import React from "react";
-import Messages from "../Messages";
-import { compose } from "recompose";
 
 import { withAuthorization } from "../Session";
-import { withFirebase } from "../Firebase";
+import Messages from "../Messages";
 
 const Home = () => (
   <div>
@@ -16,4 +14,4 @@ const Home = () => (
 
 const condition = (authUser) => !!authUser;
 
-export default compose(withFirebase, withAuthorization(condition))(Home);
+export default withAuthorization(condition)(Home);

@@ -1,4 +1,4 @@
-import UserList from "./userList";
-import UserItem from "./userItem";
+import UserList from './UserList';
+import UserItem from './UserItem';
 
 export { UserList, UserItem };
