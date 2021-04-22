@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from "react";
 import useSWR, { mutate } from "swr";
-import { Link } from "react-router-dom";
+import { Link } from "@reach/router";
 import MarkdownEditor from "rich-markdown-editor";
 import { ToastContainer, toast } from "react-toastify";
+import { withFirebase } from "../Firebase";
 
 import "react-toastify/dist/ReactToastify.min.css";
 
-const Editor = ({ user, userId, fileId }) => {
-  const { data: file, error } = useSWR(
-    [userId, fileId],
-    this.props.firebase.getFile
-  );
+const Editor = ({ firebase, userId, fileId }) => {
+  console.log(userId, fileId);
+  const { data: file, error } = useSWR([userId, fileId], firebase.getFile);
   const [value, setValue] = useState(null);
 
   useEffect(() => {
     if (file !== undefined && value === null) {
-      console.log("Set initial content");
       setValue(file.content);
     }
   }, [file, value]);
@@ -37,7 +35,7 @@ const Editor = ({ user, userId, fileId }) => {
   });
 
   const saveChanges = () => {
-    this.props.firebase.db
+    firebase.db
       .collection("users")
       .doc(userId)
       .collection("files")
@@ -51,7 +49,7 @@ const Editor = ({ user, userId, fileId }) => {
 
   const uploadImage = async (file) => {
     if (!file.size >= 1000000) {
-      const doc = await this.props.firebase.db
+      const doc = await firebase.db
         .collection("users")
         .doc(userId)
         .collection("images")
@@ -59,7 +57,7 @@ const Editor = ({ user, userId, fileId }) => {
           name: file.name,
         });
 
-      const uploadTask = await this.props.firebase.store
+      const uploadTask = await firebase.store
         .ref()
         .child(`users/${userId}/${doc.id}-${file.name}`)
         .put(file);
@@ -102,4 +100,4 @@ const Editor = ({ user, userId, fileId }) => {
   }
 };
 
-export default Editor;
+export default withFirebase(Editor);

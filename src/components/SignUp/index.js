@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
+import { Link, navigate } from "@reach/router";
 
 import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
@@ -59,12 +59,12 @@ class SignUpFormBase extends Component {
           { merge: true }
         );
       })
-      .then(() => {
-        return this.props.firebase.doSendEmailVerification();
-      })
-      .then(() => {
+      // .then(() => {
+      //   return this.props.firebase.doSendEmailVerification();
+      // })
+      .then((userCredential) => {
         this.setState({ ...INITIAL_STATE });
-        this.props.history.push(ROUTES.HOME);
+        navigate(`/user/${userCredential.user.uid}`);
       })
       .catch((error) => {
         if (error.code === ERROR_CODE_ACCOUNT_EXISTS) {
@@ -156,7 +156,7 @@ const SignUpLink = () => (
   </p>
 );
 
-const SignUpForm = withRouter(withFirebase(SignUpFormBase));
+const SignUpForm = withFirebase(SignUpFormBase);
 
 export default SignUp;
 

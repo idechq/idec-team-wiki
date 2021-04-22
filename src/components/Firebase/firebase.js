@@ -102,9 +102,10 @@ class Firebase {
 
   messages = () => this.db.collection("messages");
   // User files API
+
   getUserFiles = async (userId) => {
     const doc = await this.db.collection("users").doc(userId).get();
-
+    console.log(userId);
     if (doc.exists) {
       console.log("User found in database");
       const snapshot = await this.db

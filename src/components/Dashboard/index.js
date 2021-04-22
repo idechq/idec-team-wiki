@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import useSWR, { mutate } from "swr";
-import { Link } from "react-router-dom";
+import { Link } from "@reach/router";
 import { withFirebase } from "../Firebase";
 
-const Dashboard = ({ userId, props }) => {
+function Dashboard({ firebase, userId }) {
+  // const getFiles = props.firebase.getUserFiles();
   const [nameValue, setNameValue] = useState("");
-  const { data, error } = useSWR(userId, props.firebase.getUserFiles);
+  const { data, error } = useSWR(userId, firebase.getUserFiles);
 
   if (error) return <p>Error loading data!</p>;
   else if (!data) return <p>Loading...</p>;
@@ -17,7 +18,7 @@ const Dashboard = ({ userId, props }) => {
             e.preventDefault();
             if (nameValue) {
               setNameValue("");
-              props.firebase.createFile(userId, nameValue);
+              firebase.createFile(userId, nameValue);
               mutate(userId);
             }
           }}
@@ -47,6 +48,6 @@ const Dashboard = ({ userId, props }) => {
       </div>
     );
   }
-};
+}
 
 export default withFirebase(Dashboard);

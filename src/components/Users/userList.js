@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import React, { Component } from "react";
+import { Link } from "@reach/router";
 
-import { withFirebase } from '../Firebase';
-import * as ROUTES from '../../constants/routes';
+import { withFirebase } from "../Firebase";
+import * as ROUTES from "../../constants/routes";
 
 class UserList extends Component {
   constructor(props) {
@@ -17,20 +17,16 @@ class UserList extends Component {
   componentDidMount() {
     this.setState({ loading: true });
 
-    this.unsubscribe = this.props.firebase
-      .users()
-      .onSnapshot(snapshot => {
-        let users = [];
+    this.unsubscribe = this.props.firebase.users().onSnapshot((snapshot) => {
+      let users = [];
 
-        snapshot.forEach(doc =>
-          users.push({ ...doc.data(), uid: doc.id }),
-        );
+      snapshot.forEach((doc) => users.push({ ...doc.data(), uid: doc.id }));
 
-        this.setState({
-          users,
-          loading: false,
-        });
+      this.setState({
+        users,
+        loading: false,
       });
+    });
   }
 
   componentWillUnmount() {
@@ -45,7 +41,7 @@ class UserList extends Component {
         <h2>Users</h2>
         {loading && <div>Loading ...</div>}
         <ul>
-          {users.map(user => (
+          {users.map((user) => (
             <li key={user.uid}>
               <span>
                 <strong>ID:</strong> {user.uid}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route } from "react-router-dom";
+import { Router } from "@reach/router";
 import { compose } from "recompose";
 
 import { withAuthorization, withEmailVerification } from "../Session";
@@ -12,10 +12,10 @@ const Admin = () => (
     <h1>Admin</h1>
     <p>The Admin Page is accessible by every signed in admin user.</p>
 
-    <Switch>
-      <Route exact path={ROUTES.ADMIN_DETAILS} component={UserItem} />
-      <Route exact path={ROUTES.ADMIN} component={UserList} />
-    </Switch>
+    <Router>
+      <UserItem exact path={ROUTES.ADMIN_DETAILS} />
+      <UserList exact path={ROUTES.ADMIN} />
+    </Router>
   </div>
 );
 
