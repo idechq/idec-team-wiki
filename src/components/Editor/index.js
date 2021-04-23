@@ -2,21 +2,23 @@ import React, { useState, useEffect } from "react";
 import useSWR, { mutate } from "swr";
 import { Link } from "@reach/router";
 import MarkdownEditor from "rich-markdown-editor";
+import gfm from "remark-gfm";
+import ReactMarkdown from "react-markdown";
 import { ToastContainer, toast } from "react-toastify";
 import { withFirebase } from "../Firebase";
 
 import "react-toastify/dist/ReactToastify.min.css";
+import SourceCode from "./SourceCode";
 
 const Editor = ({ firebase, userId, fileId }) => {
-  console.log(userId, fileId);
   const { data: file, error } = useSWR([userId, fileId], firebase.getFile);
-  const [value, setValue] = useState(null);
+  const [markdown, setMarkdown] = useState(null);
 
   useEffect(() => {
-    if (file !== undefined && value === null) {
-      setValue(file.content);
+    if (file !== undefined && markdown === null) {
+      setMarkdown(file.content);
     }
-  }, [file, value]);
+  }, [file, markdown]);
 
   const onUnload = (event) => {
     event.preventDefault();
@@ -25,7 +27,7 @@ const Editor = ({ firebase, userId, fileId }) => {
   };
 
   useEffect(() => {
-    if (file && !(file.content === value)) {
+    if (file && !(file.content === markdown)) {
       window.addEventListener("beforeunload", onUnload);
     } else {
       window.removeEventListener("beforeunload", onUnload);
@@ -41,7 +43,7 @@ const Editor = ({ firebase, userId, fileId }) => {
       .collection("files")
       .doc(fileId)
       .update({
-        content: value,
+        content: markdown,
       });
     mutate([userId, fileId]);
     toast.success("🎉 Your changes have been saved!");
@@ -72,28 +74,14 @@ const Editor = ({ firebase, userId, fileId }) => {
     return (
       <div>
         <header className="editor-header">
-          <Link className="back-button" to={`/user/${userId}`}>
-            &lt;
-          </Link>
           <h3>{file.name}</h3>
-          <button
-            disabled={file.content === value}
-            onClick={saveChanges}
-            className="save-button"
-          >
-            Save Changes
-          </button>
         </header>
-        <div className="editor">
-          <MarkdownEditor
-            defaultValue={file.content}
-            onChange={(getValue) => {
-              setValue(getValue());
-            }}
-            uploadImage={uploadImage}
-            onShowToast={(message) => toast(message)}
-          />
-        </div>
+        <SourceCode
+          markdown={markdown}
+          saveChanges={saveChanges}
+          setMarkdown={setMarkdown}
+        />
+        <ReactMarkdown remarkPlugins={[gfm]} children={markdown} />
         <ToastContainer />
       </div>
     );
