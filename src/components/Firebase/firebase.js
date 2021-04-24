@@ -1,6 +1,7 @@
 import app from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/storage";
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -25,6 +26,7 @@ class Firebase {
 
     this.auth = app.auth();
     this.db = app.firestore();
+    this.store = app.storage();
 
     /* Social Sign In Method Provider */
 
@@ -157,6 +159,38 @@ class Firebase {
       .collection("files")
       .doc(fileId)
       .delete();
+    return res;
+  };
+
+  uploadImage = async (userId, file) => {
+    if (!file.size >= 1000000) {
+      const doc = await this.db
+        .collection("users")
+        .doc(userId)
+        .collection("images")
+        .add({
+          name: file.name,
+        });
+
+      const uploadTask = await this.store
+        .ref()
+        .child(`users/${userId}/${doc.id}-${file.name}`)
+        .put(file);
+
+      return uploadTask.ref.getDownloadURL();
+    }
+  };
+
+  updateFileMarkdownContent = async (userId, fileId, markdown) => {
+    let res = await this.db
+      .collection("users")
+      .doc(userId)
+      .collection("files")
+      .doc(fileId)
+      .update({
+        content: markdown,
+      });
+
     return res;
   };
 }

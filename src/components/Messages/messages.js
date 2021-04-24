@@ -1,125 +1,107 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 
 import { AuthUserContext } from "../Session";
 import { withFirebase } from "../Firebase";
 import MessageList from "./MessageList";
 
-class Messages extends Component {
-  constructor(props) {
-    super(props);
+const Messages = ({ firebase }) => {
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [limit, setLimit] = useState(5);
 
-    this.state = {
-      text: "",
-      loading: false,
-      messages: [],
-      limit: 5,
-    };
-  }
+  useEffect(() => {
+    setLoading(true);
 
-  componentDidMount() {
-    this.onListenForMessages();
-  }
-
-  onListenForMessages = () => {
-    this.setState({ loading: true });
-
-    this.unsubscribe = this.props.firebase
+    const unsubscribe = firebase
       .messages()
       .orderBy("createdAt", "desc")
-      .limit(this.state.limit)
+      .limit(limit)
       .onSnapshot((snapshot) => {
         if (snapshot.size) {
           let messages = [];
           snapshot.forEach((doc) =>
             messages.push({ ...doc.data(), uid: doc.id })
           );
-
-          this.setState({
-            messages: messages.reverse(),
-            loading: false,
-          });
+          messages.reverse();
+          setLoading(false);
         } else {
-          this.setState({ messages: null, loading: false });
+          setMessages([]);
+          setLoading(true);
         }
       });
-  };
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
-
-  onChangeText = (event) => {
-    this.setState({ text: event.target.value });
-  };
-
-  onCreateMessage = (event, authUser) => {
-    this.props.firebase.messages().add({
-      text: this.state.text,
+  const onCreateMessage = (event, authUser) => {
+    firebase.messages().add({
+      text: text,
       userId: authUser.uid,
-      createdAt: this.props.firebase.fieldValue.serverTimestamp(),
+      createdAt: firebase.fieldValue.serverTimestamp(),
     });
 
-    this.setState({ text: "" });
+    setText("");
 
     event.preventDefault();
   };
 
-  onEditMessage = (message, text) => {
+  const onEditMessage = (message, text) => {
     const { uid, ...messageSnapshot } = message;
 
-    this.props.firebase.message(message.uid).update({
+    firebase.message(message.uid).update({
       ...messageSnapshot,
       text,
-      editedAt: this.props.firebase.fieldValue.serverTimestamp(),
+      editedAt: firebase.fieldValue.serverTimestamp(),
     });
   };
 
-  onRemoveMessage = (uid) => {
-    this.props.firebase.message(uid).delete();
+  const onRemoveMessage = (uid) => {
+    firebase.message(uid).delete();
   };
 
-  onNext = () => {
-    this.setState(
-      (state) => ({ limit: state.limit + 5 }),
-      this.onListenForMessages
-    );
+  const onNext = () => {
+    setLimit(limit + 5);
   };
 
-  render() {
-    const { text, messages, loading } = this.state;
+  return (
+    <AuthUserContext.Consumer>
+      {(authUser) => (
+        <div>
+          {!loading && messages && (
+            <button type="button" onClick={onNext}>
+              More
+            </button>
+          )}
 
-    return (
-      <AuthUserContext.Consumer>
-        {(authUser) => (
-          <div>
-            {!loading && messages && (
-              <button type="button" onClick={this.onNext}>
-                More
-              </button>
-            )}
+          {loading && <div>Loading ...</div>}
 
-            {loading && <div>Loading ...</div>}
+          {messages && (
+            <MessageList
+              authUser={authUser}
+              messages={messages}
+              onEditMessage={onEditMessage}
+              onRemoveMessage={onRemoveMessage}
+            />
+          )}
 
-            {messages && (
-              <MessageList
-                authUser={authUser}
-                messages={messages}
-                onEditMessage={this.onEditMessage}
-                onRemoveMessage={this.onRemoveMessage}
-              />
-            )}
+          {!messages && <div>There are no messages ...</div>}
 
-            {!messages && <div>There are no messages ...</div>}
-
-            <form onSubmit={(event) => this.onCreateMessage(event, authUser)}>
-              <input type="text" value={text} onChange={this.onChangeText} />
-              <button type="submit">Send</button>
-            </form>
-          </div>
-        )}
-      </AuthUserContext.Consumer>
-    );
-  }
-}
+          <form onSubmit={(event) => onCreateMessage(event, authUser)}>
+            <input
+              type="text"
+              value={text}
+              onChange={(e) => {
+                setText(e.target.value);
+              }}
+            />
+            <button type="submit">Send</button>
+          </form>
+        </div>
+      )}
+    </AuthUserContext.Consumer>
+  );
+};
 
 export default withFirebase(Messages);

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useSWR, { mutate } from "swr";
-import { Link } from "@reach/router";
-import MarkdownEditor from "rich-markdown-editor";
+// import MarkdownEditor from "rich-markdown-editor";
 import gfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import { ToastContainer, toast } from "react-toastify";
@@ -37,35 +36,9 @@ const Editor = ({ firebase, userId, fileId }) => {
   });
 
   const saveChanges = () => {
-    firebase.db
-      .collection("users")
-      .doc(userId)
-      .collection("files")
-      .doc(fileId)
-      .update({
-        content: markdown,
-      });
+    firebase.updateFileMarkdownContent(userId, fileId, markdown);
     mutate([userId, fileId]);
     toast.success("🎉 Your changes have been saved!");
-  };
-
-  const uploadImage = async (file) => {
-    if (!file.size >= 1000000) {
-      const doc = await firebase.db
-        .collection("users")
-        .doc(userId)
-        .collection("images")
-        .add({
-          name: file.name,
-        });
-
-      const uploadTask = await firebase.store
-        .ref()
-        .child(`users/${userId}/${doc.id}-${file.name}`)
-        .put(file);
-
-      return uploadTask.ref.getDownloadURL();
-    }
   };
 
   if (error) return <p>We had an issue while getting the data</p>;

@@ -3,7 +3,7 @@ import useSWR, { mutate } from "swr";
 import { Link } from "@reach/router";
 import { withFirebase } from "../Firebase";
 
-function Dashboard({ firebase, userId }) {
+const Dashboard = ({ firebase, userId }) => {
   // const getFiles = props.firebase.getUserFiles();
   const [nameValue, setNameValue] = useState("");
   const { data, error } = useSWR(userId, firebase.getUserFiles);
@@ -48,6 +48,6 @@ function Dashboard({ firebase, userId }) {
       </div>
     );
   }
-}
+};
 
 export default withFirebase(Dashboard);
