@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import useSWR, { mutate } from "swr";
-import MarkdownEditor from "rich-markdown-editor";
+// import MarkdownEditor from "rich-markdown-editor";
 import gfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import sanitize from "rehype-sanitize";
 import { ToastContainer, toast } from "react-toastify";
 import { withFirebase } from "../Firebase";
 
@@ -56,14 +58,18 @@ const Editor = ({ firebase, userId, fileId }) => {
           file={file}
           userId={userId}
         />
-        <MarkdownEditor
+        {/* <MarkdownEditor
           defaultValue={markdown}
           readOnly={true}
           onClickLink={() => {
             console.log("click");
           }}
+        /> */}
+        <ReactMarkdown
+          rehypePlugins={[rehypeRaw]}
+          remarkPlugins={[gfm]}
+          children={markdown}
         />
-        <ReactMarkdown remarkPlugins={[gfm]} children={markdown} />
         <ToastContainer />
       </div>
     );

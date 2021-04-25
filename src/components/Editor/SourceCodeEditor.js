@@ -37,14 +37,9 @@ const SourceCodeEditor = ({
 
   return (
     <>
-      {/* <textarea
-        value={markdown}
-        onChange={(e) => {
-          setMarkdown(e.target.value);
-        }}
-      /> */}
       <MarkdownEditor
         defaultValue={file.content}
+        // readOnly={true}
         onChange={(text) => {
           setMarkdown(text());
         }}

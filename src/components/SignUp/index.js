@@ -13,11 +13,12 @@ const SignUp = () => (
 );
 
 const INITIAL_STATE = {
-  username: "",
+  firstname: "",
+  lastname: "",
   email: "",
+  team: "",
   passwordOne: "",
   passwordTwo: "",
-  isAdmin: false,
 };
 
 const ERROR_CODE_ACCOUNT_EXISTS = "auth/email-already-in-use";
@@ -32,17 +33,13 @@ const ERROR_MSG_ACCOUNT_EXISTS = `
 
 const SignUpFormBase = ({ firebase }) => {
   const [
-    { username, email, passwordOne, passwordTwo, isAdmin },
+    { firstname, lastname, team, email, passwordOne, passwordTwo },
     setState,
   ] = useState(INITIAL_STATE);
   const [error, setError] = useState(null);
 
   const onSubmit = (event) => {
     const roles = {};
-
-    if (isAdmin) {
-      roles[ROLES.ADMIN] = ROLES.ADMIN;
-    }
 
     firebase
       .doCreateUserWithEmailAndPassword(email, passwordOne)
@@ -53,7 +50,9 @@ const SignUpFormBase = ({ firebase }) => {
           .user(userId)
           .set(
             {
-              username,
+              firstname,
+              lastname,
+              team,
               email,
               roles,
             },
@@ -88,16 +87,25 @@ const SignUpFormBase = ({ firebase }) => {
     passwordOne !== passwordTwo ||
     passwordOne === "" ||
     email === "" ||
-    username === "";
+    firstname === "" ||
+    lastname === "" ||
+    team === "";
 
   return (
     <form onSubmit={onSubmit}>
       <input
-        name="username"
-        value={username}
+        name="firstname"
+        value={firstname}
         onChange={onChange}
         type="text"
-        placeholder="Full Name"
+        placeholder="First Name"
+      />
+      <input
+        name="lastname"
+        value={lastname}
+        onChange={onChange}
+        type="text"
+        placeholder="Last Name"
       />
       <input
         name="email"
@@ -105,6 +113,13 @@ const SignUpFormBase = ({ firebase }) => {
         onChange={onChange}
         type="text"
         placeholder="Email Address"
+      />
+      <input
+        name="team"
+        value={team}
+        onChange={onChange}
+        type="text"
+        placeholder="Team Name"
       />
       <input
         name="passwordOne"
@@ -120,18 +135,7 @@ const SignUpFormBase = ({ firebase }) => {
         type="password"
         placeholder="Confirm Password"
       />
-      <label>
-        Admin:
-        <input
-          name="isAdmin"
-          type="checkbox"
-          checked={isAdmin}
-          onChange={(e) => {
-            const { name, checked } = e.target;
-            setState({ [name]: checked });
-          }}
-        />
-      </label>
+
       <button disabled={isInvalid} type="submit">
         Sign Up
       </button>

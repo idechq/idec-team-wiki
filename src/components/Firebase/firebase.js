@@ -98,11 +98,35 @@ class Firebase {
 
   users = () => this.db.collection("users");
 
+  // *** User API ***
+  team = (uid) => this.db.doc(`teams/${uid}`);
+
+  teams = () => this.db.collection("teams");
+
   // *** Message API ***
 
   message = (uid) => this.db.doc(`messages/${uid}`);
 
   messages = () => this.db.collection("messages");
+
+  // User files API
+  // getTeams = async () => {
+  //   const doc = await this.db.collection("teams").get();
+  //   if (doc.exists) {
+  //     console.log("User found in database");
+  //     const snapshot = await this.db.collection("teams").get();
+
+  //     let teams = [];
+  //     snapshot.forEach((team) => {
+  //       teams.push({ id: file.id, name: name, content: content });
+  //     });
+  //     return userFiles;
+  //   } else {
+  //     console.log("User not found in database, creating new entry...");
+  //     this.db.collection("users").doc(userId).set({});
+  //     return [];
+  //   }
+  // };
   // User files API
 
   getUserFiles = async (userId) => {
