@@ -11,11 +11,6 @@ const PasswordForget = () => (
   </div>
 );
 
-const INITIAL_STATE = {
-  email: "",
-  error: null,
-};
-
 const PasswordForgetFormBase = ({ firebase }) => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);

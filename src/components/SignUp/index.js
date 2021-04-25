@@ -48,26 +48,30 @@ const SignUpFormBase = ({ firebase }) => {
       .doCreateUserWithEmailAndPassword(email, passwordOne)
       .then((authUser) => {
         // Create a user in your Firebase realtime database
-        return firebase.user(authUser.user.uid).set(
-          {
-            username,
-            email,
-            roles,
-          },
-          { merge: true }
-        );
+        const userId = authUser.user.uid;
+        return firebase
+          .user(userId)
+          .set(
+            {
+              username,
+              email,
+              roles,
+            },
+            { merge: true }
+          )
+          .then(() => {
+            setState({ ...INITIAL_STATE });
+            navigate(`/user/${userId}`);
+          });
       })
       // .then(() => {
       //   return this.props.firebase.doSendEmailVerification();
       // })
-      .then((userCredential) => {
-        setState({ ...INITIAL_STATE });
-        navigate(`/user/${userCredential.user.uid}`);
-      })
       .catch((error) => {
         if (error.code === ERROR_CODE_ACCOUNT_EXISTS) {
           error.message = ERROR_MSG_ACCOUNT_EXISTS;
         }
+        console.log(error);
 
         setError(error);
       });

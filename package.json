@@ -15,7 +15,7 @@
     "react-toastify": "^7.0.3",
     "recompose": "^0.30.0",
     "remark-gfm": "^1.0.0",
-    "rich-markdown-editor": "^11.6.4",
+    "rich-markdown-editor": "^11.6.7",
     "styled-components": "^5.2.3",
     "swr": "^0.5.5",
     "web-vitals": "^1.0.1"
